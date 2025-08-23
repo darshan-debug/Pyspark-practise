@@ -1,0 +1,6 @@
+product_id,product_name,original_price,discount_percentage
+P001,Laptop,1000.00,10
+P002,Phone,800.00,5
+P003,Tablet,600.00,15
+P004,Monitor,300.00,20
+P005,Keyboard,100.00,25

@@ -1,0 +1,26 @@
+[
+  {
+    "customer_id": "C001",
+    "order_id": "O1001",
+    "products": [
+      {
+        "product_name": "Laptop",
+        "product_price": 1500
+      },
+      {
+        "product_name": "Mouse",
+        "product_price": 25
+      }
+    ]
+  },
+  {
+    "customer_id": "C002",
+    "order_id": "O1002",
+    "products": [
+      {
+        "product_name": "Keyboard",
+        "product_price": 75
+      }
+    ]
+  }
+]

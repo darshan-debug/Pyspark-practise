@@ -5,6 +5,8 @@ def code(spark):
     df=spark.read.format('csv').option('header','true').schema('product_id string,product_name string ,original_price float,discount_percentage int').load('./csvFiles/productDiscount.csv')
     df.printSchema()
     df.show()
+    print(df.take(3))
+    print(df.collect())
 if __name__=='__main__':
     spark=SparkSession.builder.getOrCreate()
     spark.sparkContext.setLogLevel('ERROR')

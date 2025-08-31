@@ -1,0 +1,44 @@
+--imp
+date_add(start_date, num_days): Adds a number of days to a date. date_add('2025-01-01', 5) returns '2025-01-06'.
+
+add_months(start_date, num_months): Adds a number of months to a date. add_months('2025-01-31', 1) returns '2025-02-28'.
+
+months_between(date1, date2): Returns the number of months between two dates. months_between('2025-02-28', '2025-01-31') returns 0.93548387.
+
+--imp
+to_date(string, format): Converts a string with a specified format to a date type. to_date('2025-05-12', 'yyyy-MM-dd') returns a date object.
+
+next_day(date, day_of_week): Returns the first date that is later than the date specified and is a specified day of the week. The day of the week is case-insensitive (e.g., 'Mon', 'Monday'). next_day('2025-01-01', 'Sun') returns '2025-01-05'.
+
+Subtracting from Dates
+date_sub(start_date, num_days): Subtracts a number of days from a date. date_sub('2025-01-05', 5) returns '2024-12-31'.
+
+Date Differences and Parts
+--imp
+datediff(end_date, start_date): Returns the number of days between two dates. datediff('2025-01-05', '2025-01-01') returns 4.
+
+year(date): Extracts the year.
+
+month(date): Extracts the month (1-12).
+
+day(date): Extracts the day of the month (1-31). dayofmonth() is an alias.
+
+dayofyear(date): Extracts the day of the year (1-366).
+
+weekofyear(date): Extracts the week of the year (1-53).
+
+last_day(date): Returns the last day of the month for the given date. last_day('2025-01-15') returns '2025-01-31'.
+
+Formatting and Conversion
+--imp
+date_format(date, format_string): Formats a date or timestamp to a string. The format string uses patterns like yyyy, MM, dd, HH, mm, ss, etc. date_format('2025-01-01', 'MM/dd/yyyy') returns '01/01/2025'.
+
+to_timestamp(string, format): Converts a string to a timestamp type.
+
+unix_timestamp(date): Converts a date or timestamp to a Unix timestamp (seconds since 1970-01-01).
+
+Current Date and Time
+--imp
+current_date(): Returns the current date as a DATE type.
+
+current_timestamp(): Returns the current date and time as a TIMESTAMP type. now() is an alias for this function.

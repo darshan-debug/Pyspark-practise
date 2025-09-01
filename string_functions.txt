@@ -1,0 +1,28 @@
+
+| Function Name | Description | Sample Syntax |
+| :--- | :--- | :--- |
+| **`SUBSTR`** or **`SUBSTRING`** | Extracts a substring from a string. | `SUBSTR('Hello World', 7, 5)` returns `'World'` |
+| **`LENGTH`** or **`CHAR_LENGTH`** | Returns the number of characters in a string. | `LENGTH('Spark')` returns `5` |
+| **`TRIM`** | Removes leading and trailing whitespace. | `TRIM('  Spark  ')` returns `'Spark'` |
+| **`LTRIM`** | Removes leading whitespace. | `LTRIM('  Spark  ')` returns `'Spark  '` |
+| **`RTRIM`** | Removes trailing whitespace. | `RTRIM('  Spark  ')` returns `'  Spark'` |
+| **`UPPER`** | Converts a string to uppercase. | `UPPER('spark')` returns `'SPARK'` |
+| **`LOWER`** | Converts a string to lowercase. | `LOWER('SPARK')` returns `'spark'` |
+| **`INITCAP`** | Converts the first letter of each word to uppercase. | `INITCAP('hello world')` returns `'Hello World'` |
+| **`CONCAT`** | Concatenates two or more strings. | `CONCAT('Hello', ' ', 'World')` returns `'Hello World'` |
+| **`CONCAT_WS`** | Concatenates with a separator. | `CONCAT_WS('-', '2025', '09', '01')` returns `'2025-09-01'` |
+| **`REPLACE`** | Replaces all occurrences of a substring. | `REPLACE('abcde', 'cde', 'xyz')` returns `'abxyz'` |
+| **`LOCATE`** | Returns the position of the first occurrence of a substring. | `LOCATE('p', 'Spark')` returns `2` |
+| **`SPLIT`** | Splits a string by a delimiter into an array of strings. | `SPLIT('a,b,c', ',')` returns `['a', 'b', 'c']` |
+| **`REGEXP_EXTRACT`** | Extracts a substring that matches a regular expression. | `REGEXP_EXTRACT('email: test@example.com', '.*: (.*)', 1)` returns `'test@example.com'` |
+| **`REGEXP_REPLACE`** | Replaces substrings that match a regular expression. | `REGEXP_REPLACE('123-456-7890', '-', '')` returns `'1234567890'` |
+| **`LIKE`** | Performs pattern matching using wildcards (`_` and `%`). | `SELECT * FROM table WHERE col LIKE 'A%C'` |
+| **`RLIKE`** | Performs regular expression matching. | `SELECT * FROM table WHERE col RLIKE '^[0-9]+$'` |
+| **`LPAD`** | Pads a string on the left with a specified character. | `LPAD('123', 5, '0')` returns `'00123'` |
+| **`RPAD`** | Pads a string on the right with a specified character. | `RPAD('123', 5, '0')` returns `'12300'` |
+| **`REVERSE`** | Reverses a string. | `REVERSE('abc')` returns `'cba'` |
+| **`COALESCE`** | Returns the first non-null value from a list. | `COALESCE(NULL, 'A', 'B')` returns `'A'` |
+| **`SOUNDEX`** | Returns a four-character string representing the sound of the words. | `SOUNDEX('Smith')` returns `'S530'` |
+
+df.write.partitionBy("col1", "col2").format("format_name").save("path/to/save")
+df.write.bucketBy(10, "user_id").saveAsTable("my_table")

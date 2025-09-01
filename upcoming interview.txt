@@ -1,0 +1,196 @@
+C:\Users\DARSHAN KUMAR>jupyter-notebook
+
+hdfs short commings:
+1) hard to manage and administer, high operational complexity
+2) its map reduce api required a lot of boiler plate setup code
+3) intermediate resuts are written to hard disk, which were then read again, leading to slowness
+4) only suitable for batch processing, following were not addressed: ML,streaming data, interactive SQL like queries
+
+to solve point 4, separate apache projects were developed, having their own apis, like hive,storm, which increased the operational complexity further
+
+Apache Spark is a unified engine designed for large-scale distributed data processing,
+on premises in data centers or in the cloud.
+Spark provides in-memory storage for intermediate computations, making it much
+faster than Hadoop MapReduce. It incorporates libraries with composable APIs for
+machine learning (MLlib), SQL for interactive queries (Spark SQL), stream process‐
+ing (Structured Streaming) for interacting with real-time data, and graph processing
+(GraphX)
+
+-> Spark builds its query computations as a directed acyclic graph (DAG); its
+DAG scheduler and query optimizer construct an efficient computational graph that
+can usually be decomposed into tasks that are executed in parallel across workers on
+the cluster. 
+
+-> Spark achieves simplicity by providing a fundamental abstraction of a simple logical
+data structure called a Resilient Distributed Dataset (RDD) upon which all other
+higher-level structured data abstractions, such as DataFrames and Datasets, are con‐
+structed
+
+three Spark APIs—RDDs,
+DataFrames, or Datasets
+
+jobs->stages->tasks
+
+log_df = spark.read.text("path_to_large_text_file").repartition(8)
+print(log_df.rdd.getNumPartitions())
+
+Table 2-1. Transformations and actions as Spark operations
+Transformations Actions
+orderBy() show()
+groupBy() take()
+filter() count()
+select() collect()
+join() save()
+read()  first()
+
+Narrow versus wide transformations
+
+Depending on how Spark is deployed, the driver launches a web UI, running by
+default on port 4040, 
+
+triggering  a complete spark program: (page 37)
+$SPARK_HOME/bin/spark-submit mnmcount.py data/mnm_dataset.csv
+
+
+new_fire_df = fire_df.withColumnRenamed("Delay", "ResponseDelayedinMins")
+
+datasets are typed, each objects datatype is know at compile time, its applicble to java,scala version of spark.
+dataframes are untyped, operations on DataFrames are checked at runtime, datatypes are known only at runtime. its applicable to python and R, version of scala
+
+instead of having a separate metastore for Spark tables, Spark by default uses the
+Apache Hive metastore, located at /user/hive/warehouse, to persist all the metadata
+about your tables
+
+spark.catalog.listDatabases()
+spark.catalog.listTables()
+spark.catalog.listColumns("us_delay_flights_tbl")
+
+spark-submit --conf spark.sql.shuffle.partitions=5 --conf "spark.executor.memory=2g" --class main.scala.chapter7.SparkConfig_7_1 jars/mainscala-chapter7_2.12-1.0.jar
+
+spark = SparkSession.builder
+.config("spark.sql.shuffle.partitions", 5)
+.config("spark.executor.memory", "2g")
+.master("local[*]")
+.appName("SparkConfig")
+.getOrCreate()
+
+To set or modify an existing configuration programmatically, first check if the property is modifiable. spark.conf.isModifiable("<config_name>") will return true or
+false. All modifiable configs can be set to new values using the API
+>>> spark.conf.get("spark.sql.shuffle.partitions")
+'200'
+>>> spark.conf.set("spark.sql.shuffle.partitions", 5)
+
+The amount of memory available to each executor is controlled by spark.executor.memory
+
+delta lake time travel:
+1) discribe history tbl; --shows all the versions
+2) restore table tbl to version as of <versionNumber>; 
+RESTORE TABLE tbl TO TIMESTAMP AS OF '2025-08-31 10:00:00';
+3) instead of restorng, just view : SELECT * FROM my_delta_table VERSION AS OF 123  
+SELECT * FROM my_delta_table TIMESTAMP AS OF '2025-09-01'
+
+
+Spark shuffle is the process of redistributing data across the cluster's partitions to prepare it for an operation that requires data from multiple partitions. It's a fundamental part of how Spark handles operations that can't be computed on a single partition.
+How Spark Shuffle Works
+Spark's core design is based on transformations (which are lazy) and actions (which trigger computation). Transformations are categorized into two types:
+
+Narrow Transformations: These operations (like filter(), map()) do not require a shuffle because each output partition depends on only one input partition. The work can be done locally on each executor without exchanging data.
+
+
+Wide Transformations: These operations, such as groupBy(), join(), and repartition(), require a shuffle. They force Spark to move data across the network to ensure that all data with the same key is on the same executor. For example, to calculate the sum of sales for each customer, all records for a given customer must be brought to the same executor
+
+Execution memory is used for Spark shuffles, joins, sorts, and aggregations. 
+storage memory is primarily used for caching user data structures and partitions derived from DataFrames.
+
+optimizations:
+1) dynamic allocation of no. of executor: spark.dynamicAllocation.enabled true
+2) increasing execution memory, by reducing storage in executor nodes ( since Execution memory is used for Spark shuffles, joins, sorts, and aggregations.)
+3) employ buffer memory before writing the final shuffle partitions to disk, and increase the buffer memory, shuffle timeouts.
+4) data is partitioned such that each partition can be processed-independently,parallely. the ideal is at least as many partitions as there are cores on the executor.
+# A DataFrame with 200 partitions
+df_large = spark.read.text("path/to/data").repartition(200)
+
+# Use coalesce() to reduce partitions without a full shuffle
+df_small = df_large.coalesce(10)
+
+# If you need to increase or rebalance the partitions, you must use repartition()
+df_rebalanced = df_large.repartition(50)
+
+repartition(n): Always performs a full shuffle of the data. It can both increase and decrease the number of partitions.
+
+coalesce(n): Avoids a full shuffle. It can only decrease the number of partitions by merging existing ones. It does not redistribute data evenly, which can lead to data skew. This makes it a much cheaper operation than repartition().
+5) default value of spark.sql.shuffle.partitions( controls #partitions created during shuffle operation,like:joins,group by) is 200, which is v high, it should be reset to no# of cores in cpu, ideally.
+6) .cache() , .persist() (both are lazy transformations): Once a DataFrame is cached, Spark can access the pre-computed result directly from memory, eliminating the need to re-read the raw data(like csv from disk) and re-apply all the transformations. This is similar to how a web browser caches web pages to load them faster on subsequent visits
+7)  can boost the performance of a shuffle sort merge join operation by using bucketing to avoid large exchanges of data.
+it pre-sorts the data, and re-organises it, thus avoiding costly shuffle operation.
+
+2 most common types of join:
+1) Broadcast Hash Join  ( when one of data sets is smaller, and the other is large enough , to be distributed among all the executors )
+-> used by defaut, when smaller data set is less than 10 MB
+-> Using a Spark broadcast variable, the smaller data set is broadcasted by the driver to all Spark executors,  and subsequently joined with the larger data set on each executors.
+-> shuffle of data, between exectors is avoided, because of broadcast, of smaller data set.
+val joinedDF = playersDF.join(broadcast(clubsDF), "key1 === key2")
+
+2) Shuffle Sort Merge Join   ( join betweem 2 large datasets , over  a  common key)
+->The sort phase sorts each data set by its desired join key
+->the merge phase iterates over each key in the row from each data set and merges the rows if the two keys match.
+val usersOrdersDF = ordersDF.join(usersDF, $"users_id" === $"uid")
+-> to eliminate the shuffle step, we can use buckets, over the column, which is used in joins. Presorting and reorganizing data in this way boosts performance, as it allows us to skip the expensive Exchange operation 
+usersDF.orderBy(asc("uid"))
+.write.format("parquet")
+.bucketBy(8, "uid")
+.mode(SaveMode.OverWrite)
+.saveAsTable("UsersTbl")
+
+how does spark optimizer work:
+analysis phase
+logical plan( find ways to do all the traansgormation in DAG in efficient way)
+physical plan ( compare the cost metrics, and choose the best eg: for joins, choose whihc is best based on the data)
+RDD code, of the chosen physical plan
+
+#no of actions=#no of jobs
+#no of wide transformations+1=#no of stages
+stages are broken to tasks, each task will be executed parallelly, in the code of each executor
+
+SQL
+-> ACID (atomicity,consistency,isolation,durability)
+-> vertical scaling
+-> high consistency
+-> highly efficient for queries
+-> CP out of cap
+
+NO-SQL
+->base( Basically Available, Soft State, Eventual Consistency)
+-> horizontal scaling
+-> high availability, eventual consitency
+-> not efficient, for queries
+-> ap out of cap
+
+
+how many executors you need to process 200 GB?
+
+spark breaks data into chunks of 128 mb, so 200 GB will be  broken to 200GB/128MB=1600 chunks or tasks.
+
+lets say X executors. ideally 5 cores for each executor, so total 5X cores.
+
+each core will take 1 task/chunk to process at a time, so 1600/5X batches will be needed.
+
+UDF(user defined functions) ( even better is vectorised udf or pandas df)
+basicudf:
+# The function takes a single argument, 'json_str'
+def find_string_lengths(json_str):
+    # ... logic for a single JSON string ...
+    return results
+
+# The UDF is registered with this functional call
+json_parser_udf = udf(lambda json_str: find_string_lengths(json.loads(json_str)), ArrayType(schema_of_list_elements))
+
+#vectorised udf:
+# The function now takes a Pandas Series of strings
+@udf(returnType=ArrayType(schema_of_list_elements))
+def vectorized_json_parser_udf(json_strings: pd.Series) -> pd.Series:
+    """
+    Vectorized UDF to parse JSON strings and find lengths of string values.
+    """
+    # The list comprehension processes the entire batch efficiently
+    return pd.Series([find_string_lengths_recursive(json.loads(s)) for s in json_strings])
